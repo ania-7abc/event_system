@@ -33,7 +33,7 @@ include(FetchContent)
 FetchContent_Declare(
     event_system
     GIT_REPOSITORY https://github.com/ania-7abc/event_system.git
-    GIT_TAG v1.0.1
+    GIT_TAG v1.0.2
 )
 
 FetchContent_MakeAvailable(event_system)
