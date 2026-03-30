@@ -1,0 +1,4 @@
+@PACKAGE_INIT@
+
+include("${CMAKE_CURRENT_LIST_DIR}/event_systemTargets.cmake")
+check_required_components(event_system)
