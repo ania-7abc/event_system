@@ -18,17 +18,17 @@ class Event
     Event(Event &&) = default;
     auto operator=(Event &&) -> Event & = default;
 
-    [[nodiscard]] auto sender() const -> const Subscriber *
+    [[nodiscard]] auto sender() const -> std::type_index
     {
         return sender_;
     }
-    void set_sender(const Subscriber *sender)
+    void set_sender(std::type_index type)
     {
-        sender_ = sender;
+        sender_ = type;
     }
 
   private:
-    const Subscriber *sender_ = nullptr;
+    std::type_index sender_ = typeid(void);
 };
 
 struct AnyEvent : Event

@@ -20,11 +20,11 @@ EventBus::~EventBus()
     }
 }
 
-void EventBus::subscribe_impl(const std::type_index &eventType, std::function<void(EventPtr)> handler,
-                              const Subscriber *senderFilter, std::weak_ptr<void> weakSubscriber)
+void EventBus::subscribe_impl(const std::type_index &event_type, std::function<void(EventPtr)> handler,
+                              std::type_index sender_filter, std::weak_ptr<void> weak_subscriber)
 {
     std::lock_guard<std::mutex> lock(mutex_);
-    subscriptions_[eventType].push_back({std::move(handler), senderFilter, std::move(weakSubscriber)});
+    subscriptions_[event_type].push_back({std::move(handler), sender_filter, std::move(weak_subscriber)});
 }
 
 void EventBus::publish(const EventPtr &event)
@@ -34,20 +34,20 @@ void EventBus::publish(const EventPtr &event)
     {
         return;
     }
-    auto eventType = std::type_index(typeid(*raw));
-    std::list<Subscription> subsCopy;
+    auto event_type = std::type_index(typeid(*raw));
+    std::list<Subscription> subs_copy;
     {
         std::lock_guard<std::mutex> lock(mutex_);
-        auto subs = subscriptions_.find(eventType);
+        auto subs = subscriptions_.find(event_type);
         if (subs != subscriptions_.end())
         {
-            subsCopy = subs->second;
+            subs_copy = subs->second;
         }
     }
 
-    for (const auto &sub : subsCopy)
+    for (const auto &sub : subs_copy)
     {
-        if ((sub.sender_filter != nullptr) && sub.sender_filter != event->sender())
+        if (sub.sender_filter != typeid(void) && sub.sender_filter != event->sender())
         {
             continue;
         }
@@ -58,23 +58,23 @@ void EventBus::publish(const EventPtr &event)
         boost::asio::post(io_, [handler = sub.handler, event]() { handler(event); });
     }
 
-    auto anyType = std::type_index(typeid(AnyEvent));
-    std::list<Subscription> anySubs;
+    auto any_type = std::type_index(typeid(AnyEvent));
+    std::list<Subscription> any_subs;
     {
         std::lock_guard<std::mutex> lock(mutex_);
-        auto subs = subscriptions_.find(anyType);
+        auto subs = subscriptions_.find(any_type);
         if (subs != subscriptions_.end())
         {
-            anySubs = subs->second;
+            any_subs = subs->second;
         }
     }
-    if (!anySubs.empty())
+    if (!any_subs.empty())
     {
-        auto anyEvent = std::make_shared<AnyEvent>(event);
-        anyEvent->set_sender(event->sender());
-        for (const auto &sub : anySubs)
+        auto any_event = std::make_shared<AnyEvent>(event);
+        any_event->set_sender(event->sender());
+        for (const auto &sub : any_subs)
         {
-            if ((sub.sender_filter != nullptr) && sub.sender_filter != anyEvent->sender())
+            if (sub.sender_filter != typeid(void) && sub.sender_filter != event->sender())
             {
                 continue;
             }
@@ -82,7 +82,7 @@ void EventBus::publish(const EventPtr &event)
             {
                 continue;
             }
-            boost::asio::post(io_, [handler = sub.handler, anyEvent]() { handler(anyEvent); });
+            boost::asio::post(io_, [handler = sub.handler, any_event]() { handler(any_event); });
         }
     }
 }

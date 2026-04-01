@@ -26,7 +26,7 @@ class Subscriber : public std::enable_shared_from_this<Subscriber>
 
   protected:
     template <typename EventType>
-    void subscribe(std::function<void(const EventType &)> handler, const Subscriber *senderFilter = nullptr);
+    void subscribe(std::function<void(const EventType &)> handler, std::type_index sender_filter = typeid(void));
 
     template <typename EventType, typename... Args> void publish(Args &&...args) const;
 
@@ -47,15 +47,15 @@ namespace event_system
 {
 
 template <typename EventType>
-void Subscriber::subscribe(std::function<void(const EventType &)> handler, const Subscriber *senderFilter)
+void Subscriber::subscribe(std::function<void(const EventType &)> handler, std::type_index sender_filter)
 {
-    bus_.subscribe(weak_from_this(), std::move(handler), senderFilter);
+    bus_.subscribe(weak_from_this(), std::move(handler), sender_filter);
 }
 
 template <typename EventType, typename... Args> void Subscriber::publish(Args &&...args) const
 {
     auto event = std::make_shared<EventType>(std::forward<Args>(args)...);
-    event->set_sender(this);
+    event->set_sender(typeid(*this));
     bus_.publish(event);
 }
 
