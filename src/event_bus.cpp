@@ -57,6 +57,34 @@ void EventBus::publish(const EventPtr &event)
         }
         boost::asio::post(io_, [handler = sub.handler, event]() { handler(event); });
     }
+
+    auto anyType = std::type_index(typeid(AnyEvent));
+    std::list<Subscription> anySubs;
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        auto subs = subscriptions_.find(anyType);
+        if (subs != subscriptions_.end())
+        {
+            anySubs = subs->second;
+        }
+    }
+    if (!anySubs.empty())
+    {
+        auto anyEvent = std::make_shared<AnyEvent>(event);
+        anyEvent->set_sender(event->sender());
+        for (const auto &sub : anySubs)
+        {
+            if ((sub.sender_filter != nullptr) && sub.sender_filter != anyEvent->sender())
+            {
+                continue;
+            }
+            if (sub.weak_subscriber.expired())
+            {
+                continue;
+            }
+            boost::asio::post(io_, [handler = sub.handler, anyEvent]() { handler(anyEvent); });
+        }
+    }
 }
 
 void EventBus::cleanup()

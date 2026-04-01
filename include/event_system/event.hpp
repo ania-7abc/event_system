@@ -1,5 +1,7 @@
 // event.hpp
 #pragma once
+#include <memory>
+#include <typeindex>
 
 namespace event_system
 {
@@ -27,6 +29,16 @@ class Event
 
   private:
     const Subscriber *sender_ = nullptr;
+};
+
+struct AnyEvent : Event
+{
+    // NOLINTNEXTLINE(clang-diagnostic-potentially-evaluated-expression)
+    explicit AnyEvent(const std::shared_ptr<const Event> &event) : original_type(typeid(*event)), original(event)
+    {
+    }
+    std::type_index original_type;
+    std::shared_ptr<const Event> original;
 };
 
 } // namespace event_system
