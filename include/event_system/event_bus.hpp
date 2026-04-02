@@ -49,12 +49,11 @@ class EventBus
     template <typename EventType>
     auto make_subscriber(std::function<void(const EventType &)> callback, std::type_index sender_filter = typeid(void));
 
-    template <typename EventType, typename... Args> void publish(const Subscriber *sender, Args &&...args)
+    template <typename EventType, typename... Args> void publish(Args &&...args)
     {
         static_assert(std::is_base_of_v<Event, EventType>, "EventType must derive from Event");
 
         auto event = std::make_shared<EventType>(std::forward<Args>(args)...);
-        event->set_sender(sender);
         publish(event);
     }
 
