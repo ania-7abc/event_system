@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.14)
-project(event_system VERSION 2.1.0 LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.30)
+project(event_system VERSION 2.1.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -15,8 +15,8 @@ target_include_directories(event_system PUBLIC
     $<INSTALL_INTERFACE:include>
 )
 
-find_package(Boost REQUIRED COMPONENTS system)
-target_link_libraries(event_system PUBLIC Boost::system)
+find_package(Boost CONFIG)
+target_link_libraries(event_system PUBLIC Boost)
 
 install(TARGETS event_system EXPORT event_systemTargets
     LIBRARY DESTINATION lib
