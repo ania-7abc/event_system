@@ -24,11 +24,6 @@ class EventBus
     using EventPtr = std::shared_ptr<const Event>;
 
     explicit EventBus();
-    ~EventBus();
-    EventBus(const EventBus &) = delete;
-    auto operator=(const EventBus &) -> EventBus & = delete;
-    EventBus(EventBus &&) = delete;
-    auto operator=(EventBus &&) -> EventBus & = delete;
 
     template <typename EventType, typename T>
     void subscribe(std::weak_ptr<T> subscriber, std::function<void(const EventType &)> handler,
@@ -77,7 +72,7 @@ class EventBus
 
     boost::asio::io_context io_;
     boost::asio::executor_work_guard<boost::asio::io_context::executor_type> work_guard_;
-    std::thread thread_;
+    std::jthread thread_;
 };
 
 } // namespace event_system

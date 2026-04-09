@@ -10,16 +10,6 @@ EventBus::EventBus() : work_guard_(boost::asio::make_work_guard(io_)), thread_([
 {
 }
 
-EventBus::~EventBus()
-{
-    work_guard_.reset();
-    io_.stop();
-    if (thread_.joinable())
-    {
-        thread_.join();
-    }
-}
-
 void EventBus::subscribe_impl(const std::type_index &event_type, std::function<void(EventPtr)> handler,
                               std::type_index sender_filter, std::weak_ptr<void> weak_subscriber)
 {
