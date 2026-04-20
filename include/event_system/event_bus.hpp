@@ -25,6 +25,12 @@ class EventBus
 
     explicit EventBus();
 
+    ~EventBus();
+    EventBus(const EventBus &) = default;
+    EventBus(EventBus &&) = default;
+    EventBus &operator=(const EventBus &) = default;
+    EventBus &operator=(EventBus &&) = default;
+
     template <typename EventType, typename T>
     void subscribe(std::weak_ptr<T> subscriber, std::function<void(const EventType &)> handler,
                    std::type_index sender_filter = typeid(void))
